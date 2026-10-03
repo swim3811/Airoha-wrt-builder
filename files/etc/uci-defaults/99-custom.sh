@@ -11,27 +11,6 @@ echo "========================================" >> "$LOGFILE"
 # 基础设置
 # =========================================================
 
-wan_zone=$(uci show firewall 2>/dev/null |
-    awk -F '[.=]' '/^firewall\.[^.]+\.name=.wan.$/ {print $2; exit}')
-
-if [ -n "$wan_zone" ]; then
-    uci -q set "firewall.$wan_zone.input=ACCEPT"
-    echo "Firewall WAN zone: $wan_zone -> input ACCEPT" >> "$LOGFILE"
-else
-    uci -q set firewall.@zone[1].input='ACCEPT'
-    echo "WARNING: WAN zone not found, fallback to firewall.@zone[1]" >> "$LOGFILE"
-fi
-
-if ! uci show dhcp 2>/dev/null |
-    grep -q "name='time.android.com'"; then
-    uci -q add dhcp domain
-    uci -q set "dhcp.@domain[-1].name=time.android.com"
-    uci -q set "dhcp.@domain[-1].ip=203.107.6.88"
-    echo "Added DHCP domain: time.android.com -> 203.107.6.88" >> "$LOGFILE"
-else
-    echo "DHCP domain time.android.com already exists" >> "$LOGFILE"
-fi
-
 uci -q set system.@system[0].hostname='WRTVERSIONINFO'
 uci -q set system.@system[0].timezone='CST-8'
 uci -q set system.@system[0].zonename='Asia/Taipei'
@@ -195,20 +174,11 @@ else
     echo "LAN IP set to: __IPADDR__/24" >> "$LOGFILE"
 fi
 
-# =========================================================
-# SSH / Web 管理 & 保存配置
-# =========================================================
-
-uci -q delete ttyd.@ttyd[0].interface
-uci -q set dropbear.@dropbear[0].Interface=''
-
 uci commit system
 uci commit luci
 uci commit firewall
 uci commit dhcp
 uci commit network
-uci commit dropbear
-uci -q commit ttyd
 
 if [ -f /etc/banner1/banner ]; then
     cp -f /etc/banner1/banner /etc/
