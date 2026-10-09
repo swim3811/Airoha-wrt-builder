@@ -363,7 +363,36 @@ uci del ttyd.cfg01a8ea.interface
 # ==========================================
 # 6. DDNS 設定 (Cloudflare)
 # ==========================================
+uci del ddns.myddns_ipv4
+uci del ddns.global.upd_privateip
+uci del ddns.global.ddns_dateformat
+uci del ddns.global.ddns_loglines
+uci set ddns.myddns_ipv6.enabled='0'
+uci del ddns.myddns_ipv6
 
+# Cloudflare IPv4 設定
+uci set ddns.Cloudflare_IPv4=service
+uci set ddns.Cloudflare_IPv4.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv4.use_ipv6='0'
+uci set ddns.Cloudflare_IPv4.enabled='1'
+uci set ddns.Cloudflare_IPv4.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.username='swim3811@gmail.com'
+uci set ddns.Cloudflare_IPv4.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
+uci set ddns.Cloudflare_IPv4.ip_source='interface'
+uci set ddns.Cloudflare_IPv4.interface='wan'
+
+# Cloudflare IPv6 設定
+uci set ddns.Cloudflare_IPv6=service
+uci set ddns.Cloudflare_IPv6.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv6.use_ipv6='1'
+uci set ddns.Cloudflare_IPv6.enabled='1'
+uci set ddns.Cloudflare_IPv6.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.username='swim3811@gmail.com'
+uci set ddns.Cloudflare_IPv6.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
+uci set ddns.Cloudflare_IPv6.ip_source='interface'
+uci set ddns.Cloudflare_IPv6.interface='wan'
 
 # ==========================================
 # 7. 設定 DHCP 固定 IP (Static Leases)
@@ -406,7 +435,7 @@ uci commit dropbear
 uci commit ttyd
 uci commit vlmcsd
 uci commit openlist
-#uci commit ddns
-#/etc/init.d/ddns restart
+uci commit ddns
+/etc/init.d/ddns restart
 
 exit 0
