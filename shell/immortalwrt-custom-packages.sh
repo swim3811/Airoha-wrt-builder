@@ -90,4 +90,4 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-run"
 # Wireguard VPN控制面板 (wireguard)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-proto-wireguard qrencode"
 
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES autocore automount nano-full luci-app-vlmcsd luci-i18n-vlmcsd-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES autocore automount nano-full luci-i18n-openlist-zh-cn luci-i18n-vlmcsd-zh-cn"
