@@ -364,48 +364,6 @@ uci del ttyd.cfg01a8ea.interface
 # 6. DDNS 設定 (Cloudflare)
 # ==========================================
 
-# 刪除舊設定
-uci del ddns.myddns_ipv4
-uci del ddns.myddns_ipv6
-
-# 全域設定
-uci set ddns.global=ddns
-uci set ddns.global.ddns_rundir='/var/run/ddns'
-uci set ddns.global.ddns_logdir='/var/log/ddns'
-
-# Cloudflare IPv4 設定
-uci set ddns.Cloudflare_IPv4='service'
-uci set ddns.Cloudflare_IPv4.enabled='1'
-uci set ddns.Cloudflare_IPv4.service_name='cloudflare.com-v4'
-uci set ddns.Cloudflare_IPv4.use_ipv6='0'
-uci set ddns.Cloudflare_IPv4.username='swim3811@gmail.com'
-uci set ddns.Cloudflare_IPv4.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
-uci set ddns.Cloudflare_IPv4.domain='h@yiqq.eu.org'
-uci set ddns.Cloudflare_IPv4.lookup_host='h.yiqq.eu.org'
-uci set ddns.Cloudflare_IPv4.ip_source='network'
-uci set ddns.Cloudflare_IPv4.ip_network='wan'
-uci set ddns.Cloudflare_IPv4.interface='wan'
-uci set ddns.Cloudflare_IPv4.use_syslog='2'
-uci set ddns.Cloudflare_IPv4.check_unit='minutes'
-uci set ddns.Cloudflare_IPv4.force_unit='minutes'
-uci set ddns.Cloudflare_IPv4.retry_unit='seconds'
-
-# Cloudflare IPv6 設定
-uci set ddns.Cloudflare_IPv6='service'
-uci set ddns.Cloudflare_IPv6.enabled='1'
-uci set ddns.Cloudflare_IPv6.service_name='cloudflare.com-v4'
-uci set ddns.Cloudflare_IPv6.use_ipv6='1'
-uci set ddns.Cloudflare_IPv6.username='swim3811@gmail.com'
-uci set ddns.Cloudflare_IPv6.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
-uci set ddns.Cloudflare_IPv6.domain='h@yiqq.eu.org'
-uci set ddns.Cloudflare_IPv6.lookup_host='h.yiqq.eu.org'
-uci set ddns.Cloudflare_IPv6.ip_source='network'
-uci set ddns.Cloudflare_IPv6.ip_network='wan6'
-uci set ddns.Cloudflare_IPv6.interface='wan6'
-uci set ddns.Cloudflare_IPv6.use_syslog='2'
-uci set ddns.Cloudflare_IPv6.check_unit='minutes'
-uci set ddns.Cloudflare_IPv6.force_unit='minutes'
-uci set ddns.Cloudflare_IPv6.retry_unit='seconds'
 
 # ==========================================
 # 7. 設定 DHCP 固定 IP (Static Leases)
@@ -448,7 +406,7 @@ uci commit dropbear
 uci commit ttyd
 uci commit vlmcsd
 uci commit openlist
-uci commit ddns
-/etc/init.d/ddns restart
+#uci commit ddns
+#/etc/init.d/ddns restart
 
 exit 0
