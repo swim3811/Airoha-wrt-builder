@@ -516,7 +516,7 @@ fi
 # ============================================
 # 步骤6: 执行 make image
 # ============================================
-make image PROFILE="$PROFILE" PACKAGES="$PACKAGES" FILES="files"
+make image PROFILE="$PROFILE" PACKAGES="$PACKAGES" FILES="files" APK_FLAGS="--force-broken-world"
 
 if [ $? -ne 0 ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') - Error: Build failed!"
