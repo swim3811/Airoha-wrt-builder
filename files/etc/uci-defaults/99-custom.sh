@@ -11,46 +11,6 @@ echo "========================================" >> "$LOGFILE"
 # 基础设置
 # =========================================================
 
-wan_zone=$(uci -q show firewall 2>/dev/null |
-    awk -F '[.=]' '$1 ~ /^firewall\.[^.]+$/ &&
-        $2 == "name" && $3 == "\047wan\047" {
-            sub(/^firewall\./, "", $1)
-            print $1
-            exit
-        }')
-
-if [ -n "$wan_zone" ]; then
-    uci -q set "firewall.$wan_zone.input=ACCEPT"
-    echo "Firewall WAN zone: $wan_zone -> input ACCEPT" >> "$LOGFILE"
-else
-    echo "WARNING: WAN zone not found, trying fallback." >> "$LOGFILE"
-
-    fallback_zone=$(uci -q show firewall 2>/dev/null |
-        awk -F '[.=]' '$1 ~ /^firewall\.@zone\[[0-9]+\]$/ &&
-            $2 == "name" && $3 == "\047wan\047" {
-                print $1
-                exit
-            }')
-
-    if [ -n "$fallback_zone" ]; then
-        uci -q set "$fallback_zone.input=ACCEPT"
-        echo "Fallback WAN zone: $fallback_zone -> input ACCEPT" >> "$LOGFILE"
-    else
-        uci -q set firewall.@zone[1].input='ACCEPT'
-        echo "WARNING: WAN zone unresolved, using legacy fallback firewall.@zone[1]" >> "$LOGFILE"
-    fi
-fi
-
-if ! uci show dhcp 2>/dev/null |
-    grep -q "name='time.android.com'"; then
-    uci -q add dhcp domain
-    uci -q set "dhcp.@domain[-1].name=time.android.com"
-    uci -q set "dhcp.@domain[-1].ip=203.107.6.88"
-    echo "Added DHCP domain: time.android.com -> 203.107.6.88" >> "$LOGFILE"
-else
-    echo "DHCP domain time.android.com already exists" >> "$LOGFILE"
-fi
-
 uci -q set system.@system[0].hostname='WRTVERSIONINFO'
 uci -q set system.@system[0].timezone='CST-8'
 uci -q set system.@system[0].zonename='Asia/Taipei'
@@ -234,16 +194,11 @@ fi
 # SSH / Web 管理 & 保存配置
 # =========================================================
 
-uci -q delete ttyd.@ttyd[0].interface
-uci -q set dropbear.@dropbear[0].Interface=''
-
 uci commit system
 uci commit luci
 uci commit firewall
 uci commit dhcp
 uci commit network
-uci commit dropbear
-uci -q commit ttyd
 
 if [ -f /etc/banner1/banner ]; then
     cp -f /etc/banner1/banner /etc/
@@ -265,5 +220,242 @@ if [ "$count" -gt 1 ]; then
 fi
 echo "99-custom.sh completed at $(date)" >> "$LOGFILE"
 echo "========================================" >> "$LOGFILE"
+
+#!/bin/sh
+
+# ==========================================
+# 1. 系統基礎設定 (密碼、語言、時區)
+# ==========================================
+
+# --- 設定管理員登入密碼 ---
+root_password="gg123456"
+(echo "$root_password"; sleep 1; echo "$root_password") | passwd > /dev/null
+
+uci del system.ntp.enabled
+uci del system.ntp.enable_server
+uci set system.cfg01e48a.log_proto='udp'
+uci set system.cfg01e48a.conloglevel='8'
+
+
+# ==========================================
+# 2. 基礎網路與 DNS 設定 (WAN / LAN / IPv6)
+# ==========================================
+
+# --- WAN PPPoE 與連線設定 ---
+uci set network.wan.proto='pppoe'
+uci set network.wan.username='88620230@ip.hinet.net'
+uci set network.wan.password='gx165725'
+uci del network.wan.auto
+uci set network.wan.ipv6='0'
+uci set network.wan.sourcefilter='0'
+uci set network.wan.delegate='0'
+
+# --- 網路介面與 IPv6 清理 ---
+uci del network.wan6
+uci del network.wan6.reqaddress
+uci del network.wan6.reqprefix
+uci set network.wan6=interface
+uci set network.wan6.proto='dhcpv6'
+uci set network.wan6.device='@wan'
+uci set network.wan6.reqaddress='try'
+uci set network.wan6.reqprefix='auto'
+uci set network.wan6.norelease='1'
+
+# --- LAN IPv6 分配 ---
+uci set network.lan.delegate='0'
+uci set network.lan.ip6assign='64'
+uci set network.lan.ip6ifaceid='eui64'
+
+# --- 手動指定 DNS (Cloudflare / Google) ---
+uci del network.wan.dns
+uci set network.wan.peerdns='0'
+uci add_list network.wan.dns='8.8.8.8'
+uci add_list network.wan.dns='8.8.4.4'
+
+uci del network.wan6.dns
+uci set network.wan6.peerdns='0'
+uci add_list network.wan6.dns='2001:4860:4860::8888'
+uci add_list network.wan6.dns='2001:4860:4860::8844'
+
+
+# ==========================================
+# 3. 防火牆與安全性設定
+# ==========================================
+
+# --- 防火牆基礎清理與 FullCone 設定 ---
+uci del firewall.cfg01e63d.syn_flood
+uci del firewall.cfg01e63d.fullcone6
+uci set firewall.cfg01e63d.synflood_protect='1'
+uci set firewall.cfg01e63d.fullcone6='1'
+
+# --- 批次啟用預設防火牆規則 ---
+uci set firewall.cfg0592bd.enabled='1'
+uci set firewall.cfg0692bd.enabled='1'
+uci set firewall.cfg0792bd.enabled='1'
+uci set firewall.cfg0892bd.enabled='1'
+uci set firewall.cfg0992bd.enabled='1'
+uci set firewall.cfg0a92bd.enabled='1'
+uci set firewall.cfg0b92bd.enabled='1'
+uci set firewall.cfg0c92bd.enabled='1'
+uci set firewall.cfg0d92bd.enabled='1'
+
+
+# ==========================================
+# 4. WireGuard VPN 配置
+# ==========================================
+
+# --- 建立 wg0 介面 ---
+uci set network.wg0=interface
+uci set network.wg0.proto='wireguard'
+uci set network.wg0.private_key='8BCbzIIe60in039ersmwklAAnVRfA5l9wD9iu2h5yWo='
+uci set network.wg0.listen_port='51820'
+uci set network.wg0.mtu='1412'
+uci del network.wg0.addresses
+uci add_list network.wg0.addresses='10.8.0.1/24'
+
+# --- 建立 Peer (Hank-Home) ---
+uci -q delete network.wireguard_wg0
+uci add network wireguard_wg0
+uci set network.@wireguard_wg0[-1].description='Hank-Home'
+uci set network.@wireguard_wg0[-1].public_key='3PVus6VW7vbAbRSFyUxHWJn5euyvwbjTvMfWmKgzkGY='
+uci set network.@wireguard_wg0[-1].private_key='gPOgSJ46RxoKCCIEUs1DhhWbOPjR0Y6HV3+pl/lZXE8='
+uci set network.@wireguard_wg0[-1].preshared_key='bCbGApHFiGGTgxhKWUahEK6avjljJuaJGuRbg82Nryg='
+uci add_list network.@wireguard_wg0[-1].allowed_ips='10.8.0.2/24'
+uci set network.@wireguard_wg0[-1].route_allowed_ips='1'
+uci set network.@wireguard_wg0[-1].persistent_keepalive='25'
+
+# --- 防火牆：將 wg0 加入 LAN 區域 ---
+uci del firewall.cfg02dc81.network
+uci add_list firewall.cfg02dc81.network='lan'
+uci add_list firewall.cfg02dc81.network='wg0'
+
+# --- 防火牆：開啟 51820 埠位 (Wan 存取) ---
+uci -q delete firewall.WireGuard
+uci set firewall.WireGuard='rule'
+uci set firewall.WireGuard.name='Allow-WireGuard'
+uci set firewall.WireGuard.proto='udp'
+uci set firewall.WireGuard.src='wan'
+uci set firewall.WireGuard.dest_port='51820'
+uci set firewall.WireGuard.target='ACCEPT'
+uci set firewall.WireGuard.enabled='1'
+
+
+# ==========================================
+# 5. DHCP 服務與靜態 IP 設定
+# ==========================================
+
+# --- LAN DHCP 參數清理與優化 ---
+uci del dhcp.lan.leasetime
+uci del dhcp.lan.start
+uci del dhcp.lan.limit
+uci del dhcp.lan.ra_slaac
+uci del dhcp.lan.dhcpv6
+uci del dhcp.lan.ignore
+
+uci del dhcp.odhcpd.maindhcp
+uci del dhcp.cfg01411c.nonwildcard
+uci del dhcp.cfg01411c.boguspriv
+uci del dhcp.cfg01411c.filterwin2k
+uci del dhcp.cfg01411c.filter_aaaa
+uci del dhcp.cfg01411c.filter_a
+
+uci set dhcp.lan.dns_service='0'
+uci add_list dhcp.lan.ra_flags='none'
+
+# --- 設定 DHCP 固定 IP (Static Leases) ---
+# Unriad
+uci add dhcp host
+uci set dhcp.@host[-1].name='Unriad'
+uci set dhcp.@host[-1].mac='04:7C:16:1C:41:41'
+uci set dhcp.@host[-1].ip='192.168.5.4'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# SA6400
+uci add dhcp host
+uci set dhcp.@host[-1].name='SA6400'
+uci set dhcp.@host[-1].mac='02:76:C6:00:03:40'
+uci set dhcp.@host[-1].ip='192.168.5.5'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# Hank-PC
+uci add dhcp host
+uci set dhcp.@host[-1].name='Hank-PC'
+uci set dhcp.@host[-1].mac='34:5A:60:1B:C6:19'
+uci set dhcp.@host[-1].ip='192.168.5.61'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# Brian-PC
+uci add dhcp host
+uci set dhcp.@host[-1].name='Brian-PC'
+uci set dhcp.@host[-1].mac='04:7C:16:E5:77:6E'
+uci set dhcp.@host[-1].ip='192.168.5.62'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# 7DR6450-1F
+uci add dhcp host
+uci set dhcp.@host[-1].name='7DR6450-1F'
+uci set dhcp.@host[-1].mac='F8:CE:21:82:55:32'
+uci set dhcp.@host[-1].ip='192.168.5.71'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# 7DR6450-2F
+uci add dhcp host
+uci set dhcp.@host[-1].name='7DR6450-2F'
+uci set dhcp.@host[-1].mac='F8:CE:21:82:5D:BA'
+uci set dhcp.@host[-1].ip='192.168.5.72'
+uci set dhcp.@host[-1].leasetime='12h'
+
+# KEF-LSX
+uci add dhcp host
+uci set dhcp.@host[-1].name='KEF-LSX'
+uci set dhcp.@host[-1].mac='84:17:15:02:68:D4'
+uci set dhcp.@host[-1].ip='192.168.5.100'
+uci set dhcp.@host[-1].leasetime='12h'
+
+
+# ==========================================
+# 6. 遠端管理與基礎服務設定 (SSH / KMS / WOL)
+# ==========================================
+
+# --- 設定主 Dropbear (SSH) ---
+uci del dropbear.main.enable
+uci del dropbear.main.RootPasswordAuth
+uci del dropbear.main.DirectInterface
+uci del dropbear.main._direct
+uci set dropbear.main.Interface='lan'
+
+# --- 新增 VPN 專用 SSH ---
+uci add dropbear dropbear # =cfg024dd4
+uci set dropbear.@dropbear[-1].Interface='wg0'
+uci set dropbear.@dropbear[-1].PasswordAuth='on'
+
+# --- 移除 ttyd 終端機綁定接口 ---
+uci del ttyd.cfg01a8ea.interface
+
+# --- VLMCSD (KMS 激活服務) ---
+uci set vlmcsd.config.enabled='1'
+uci set vlmcsd.config.auto_activate='1'
+uci del vlmcsd.config.internet_access
+
+# --- 網路喚醒 (WOL) ---
+uci add luci-wol target # =cfg02fd6c
+uci set luci-wol.@target[-1].name='Unraid'
+uci set luci-wol.@target[-1].mac='04:7C:16:1C:41:41'
+uci set luci-wol.@target[-1].iface='br-lan'
+
+
+# ==========================================
+# 7. 提交變更並重啟
+# ==========================================
+
+uci commit luci
+uci commit system
+uci commit network
+uci commit dhcp
+uci commit firewall
+uci commit dropbear
+uci commit ttyd
+uci commit vlmcsd
+uci commit luci-wol
 
 exit 0
