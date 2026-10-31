@@ -34,7 +34,7 @@ PACKAGES="$PACKAGES -wpad-basic-mbedtls -wpad-mbedtls -wpad-openssl wpad-mesh-op
 PACKAGES="$PACKAGES kmod-nft-socket kmod-nft-tproxy"
 PACKAGES="$PACKAGES tmux"
 PACKAGES="$PACKAGES kmod-br-netfilter"
-PACKAGES="$PACKAGES uhttpd luci-app-uhttpd"
+PACKAGES="$PACKAGES uhttpd luci-app-uhttpd luci-i18n-uhttpd-zh-cn"
 
 # [无线驱动]
 PACKAGES="$PACKAGES kmod-cfg80211 kmod-mac80211 kmod-mt76-connac kmod-mt76-core kmod-hwmon-nct7802 rtl826x-firmware"
@@ -51,11 +51,11 @@ PACKAGES="$PACKAGES luci-app-ttyd luci-i18n-ttyd-zh-cn"
 
 # [功能插件]
 PACKAGES="$PACKAGES block-mount"
-PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
+#PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
 PACKAGES="$PACKAGES luci-app-wol luci-i18n-wol-zh-cn"
 PACKAGES="$PACKAGES luci-app-package-manager luci-i18n-package-manager-zh-cn"
 #PACKAGES="$PACKAGES luci-app-irqbalance luci-i18n-irqbalance-zh-cn"
-PACKAGES="$PACKAGES luci-app-wifihistory luci-i18n-wifihistory-zh-cn"
+#PACKAGES="$PACKAGES luci-app-wifihistory luci-i18n-wifihistory-zh-cn"
 
 # [gemtek_w1700k-ubi插件]
 if [ "$PROFILE" = "gemtek_w1700k-ubi" ]; then
