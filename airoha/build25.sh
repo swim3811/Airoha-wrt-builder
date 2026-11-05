@@ -56,7 +56,7 @@ PACKAGES="$PACKAGES luci-app-uhttpd luci-i18n-uhttpd-zh-cn"
 
 # [功能插件]
 PACKAGES="$PACKAGES block-mount"
-PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
+#PACKAGES="$PACKAGES luci-app-upnp luci-i18n-upnp-zh-cn"
 PACKAGES="$PACKAGES luci-app-wol luci-i18n-wol-zh-cn"
 PACKAGES="$PACKAGES luci-app-package-manager luci-i18n-package-manager-zh-cn"
 #PACKAGES="$PACKAGES luci-app-irqbalance luci-i18n-irqbalance-zh-cn"
