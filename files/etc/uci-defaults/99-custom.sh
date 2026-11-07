@@ -252,8 +252,6 @@ uci set network.wan.delegate='0'
 
 # --- 網路介面與 IPv6 清理 ---
 uci del network.wan6
-uci del network.wan6.reqaddress
-uci del network.wan6.reqprefix
 uci set network.wan6=interface
 uci set network.wan6.proto='dhcpv6'
 uci set network.wan6.device='@wan'
@@ -277,6 +275,8 @@ uci set network.wan6.peerdns='0'
 uci add_list network.wan6.dns='2001:4860:4860::8888'
 uci add_list network.wan6.dns='2001:4860:4860::8844'
 
+uci del network.wan6.reqaddress
+uci del network.wan6.reqprefix
 
 # ==========================================
 # 3. 防火牆與安全性設定
