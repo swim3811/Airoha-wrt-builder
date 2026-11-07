@@ -45,7 +45,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-theme-argon luci-app-argon-config luci-i1
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-meshassistant luci-i18n-meshassistant-zh-cn"
 
 # MosDNS转发器 (MosDNS)
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES mosdns luci-app-mosdns luci-i18n-mosdns-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES mosdns luci-app-mosdns luci-i18n-mosdns-zh-cn"
 
 # nikki代理面板 (nikki)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES nikki luci-app-nikki luci-i18n-nikki-zh-cn"
