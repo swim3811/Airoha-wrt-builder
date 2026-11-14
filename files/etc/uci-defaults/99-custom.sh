@@ -448,6 +448,8 @@ uci set luci-wol.@target[-1].iface='br-lan'
 # 7. 提交變更並重啟
 # ==========================================
 
+uci set rpcd.policy=policy
+uci commit rpcd
 uci commit luci
 uci commit system
 uci commit network
