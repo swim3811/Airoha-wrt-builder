@@ -243,8 +243,8 @@ uci set system.cfg01e48a.conloglevel='8'
 
 # --- WAN PPPoE 與連線設定 ---
 uci set network.wan.proto='pppoe'
-uci set network.wan.username='88620230@ip.hinet.net'
-uci set network.wan.password='gx165725'
+uci set network.wan.username='77433450@ip.hinet.net'
+uci set network.wan.password='myepuhlq'
 uci del network.wan.auto
 uci set network.wan.ipv6='0'
 uci set network.wan.sourcefilter='0'
@@ -307,7 +307,7 @@ uci set firewall.cfg0d92bd.enabled='1'
 # --- 建立 wg0 介面 ---
 uci set network.wg0=interface
 uci set network.wg0.proto='wireguard'
-uci set network.wg0.private_key='8BCbzIIe60in039ersmwklAAnVRfA5l9wD9iu2h5yWo='
+uci set network.wg0.private_key='uFaJylwL7gJ34K1QaUMDhQmXBDBnk7mSinxSLdWUTGg='
 uci set network.wg0.listen_port='51820'
 uci set network.wg0.mtu='1412'
 uci del network.wg0.addresses
@@ -316,10 +316,10 @@ uci add_list network.wg0.addresses='10.8.0.1/24'
 # --- 建立 Peer (Hank-Home) ---
 uci -q delete network.wireguard_wg0
 uci add network wireguard_wg0
-uci set network.@wireguard_wg0[-1].description='Hank-Home'
-uci set network.@wireguard_wg0[-1].public_key='3PVus6VW7vbAbRSFyUxHWJn5euyvwbjTvMfWmKgzkGY='
-uci set network.@wireguard_wg0[-1].private_key='gPOgSJ46RxoKCCIEUs1DhhWbOPjR0Y6HV3+pl/lZXE8='
-uci set network.@wireguard_wg0[-1].preshared_key='bCbGApHFiGGTgxhKWUahEK6avjljJuaJGuRbg82Nryg='
+uci set network.@wireguard_wg0[-1].description='Yi-Home'
+uci set network.@wireguard_wg0[-1].public_key='+s/Dm1ZgEYBg54wMijVlj01sPGAXNqEoRyAFFDreons='
+uci set network.@wireguard_wg0[-1].private_key='qNQwcM0U4jl+fj9JmknaSlCx+YheczkBxx2id9TFE18='
+uci set network.@wireguard_wg0[-1].preshared_key='6EYeH3DwN5ucrg9jeXz1LyWdLrB8UWU+XT6c9mwYwvE='
 uci add_list network.@wireguard_wg0[-1].allowed_ips='10.8.0.2/24'
 uci set network.@wireguard_wg0[-1].route_allowed_ips='1'
 uci set network.@wireguard_wg0[-1].persistent_keepalive='25'
@@ -363,58 +363,33 @@ uci set dhcp.lan.dns_service='0'
 uci add_list dhcp.lan.ra_flags='none'
 
 # --- 設定 DHCP 固定 IP (Static Leases) ---
-# Unriad
 uci add dhcp host
-uci set dhcp.@host[-1].name='Unriad'
-uci set dhcp.@host[-1].mac='04:7C:16:1C:41:41'
-uci set dhcp.@host[-1].ip='192.168.5.4'
-uci set dhcp.@host[-1].leasetime='12h'
-
-# SA6400
-uci add dhcp host
-uci set dhcp.@host[-1].name='SA6400'
-uci set dhcp.@host[-1].mac='02:76:C6:00:03:40'
-uci set dhcp.@host[-1].ip='192.168.5.5'
-uci set dhcp.@host[-1].leasetime='12h'
-
-# Hank-PC
-uci add dhcp host
-uci set dhcp.@host[-1].name='Hank-PC'
-uci set dhcp.@host[-1].mac='34:5A:60:1B:C6:19'
-uci set dhcp.@host[-1].ip='192.168.5.61'
-uci set dhcp.@host[-1].leasetime='12h'
-
-# Brian-PC
-uci add dhcp host
-uci set dhcp.@host[-1].name='Brian-PC'
-uci set dhcp.@host[-1].mac='04:7C:16:E5:77:6E'
-uci set dhcp.@host[-1].ip='192.168.5.62'
-uci set dhcp.@host[-1].leasetime='12h'
-
-# 7DR6450-1F
-uci add dhcp host
-uci set dhcp.@host[-1].name='7DR6450-1F'
-uci set dhcp.@host[-1].mac='F8:CE:21:82:55:32'
+uci set dhcp.@host[-1].name='H50G-YI'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:CC'
 uci set dhcp.@host[-1].ip='192.168.5.71'
 uci set dhcp.@host[-1].leasetime='12h'
 
-# 7DR6450-2F
 uci add dhcp host
-uci set dhcp.@host[-1].name='7DR6450-2F'
-uci set dhcp.@host[-1].mac='F8:CE:21:82:5D:BA'
+uci set dhcp.@host[-1].name='H50G-Living'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:90'
 uci set dhcp.@host[-1].ip='192.168.5.72'
 uci set dhcp.@host[-1].leasetime='12h'
 
-# KEF-LSX
 uci add dhcp host
-uci set dhcp.@host[-1].name='KEF-LSX'
-uci set dhcp.@host[-1].mac='84:17:15:02:68:D4'
-uci set dhcp.@host[-1].ip='192.168.5.100'
+uci set dhcp.@host[-1].name='H50G-Mater'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:64'
+uci set dhcp.@host[-1].ip='192.168.5.73'
+uci set dhcp.@host[-1].leasetime='12h'
+
+uci add dhcp host
+uci set dhcp.@host[-1].name='YiSmall-PC'
+uci set dhcp.@host[-1].mac='4C:03:4F:BB:1F:70'
+uci set dhcp.@host[-1].ip='192.168.5.61'
 uci set dhcp.@host[-1].leasetime='12h'
 
 
 # ==========================================
-# 6. 遠端管理與基礎服務設定 (SSH / KMS / WOL)
+# 6. 遠端管理與基礎服務設定 (SSH / KMS)
 # ==========================================
 
 # --- 設定主 Dropbear (SSH) ---
@@ -437,15 +412,50 @@ uci set vlmcsd.config.enabled='1'
 uci set vlmcsd.config.auto_activate='1'
 uci del vlmcsd.config.internet_access
 
-# --- 網路喚醒 (WOL) ---
-uci add luci-wol target # =cfg02fd6c
-uci set luci-wol.@target[-1].name='Unraid'
-uci set luci-wol.@target[-1].mac='04:7C:16:1C:41:41'
-uci set luci-wol.@target[-1].iface='br-lan'
+# --- Openlist (網盤服務) ---
+uci del openlist.config.site_tls_insecure
+uci del openlist.config.log_enable
+uci set openlist.config.enabled='1'
 
 
 # ==========================================
-# 7. 提交變更並重啟
+# 7. DDNS 設定 (Cloudflare)
+# ==========================================
+
+# 刪除舊設定
+uci del ddns.myddns_ipv4
+uci del ddns.global.upd_privateip
+uci del ddns.global.ddns_dateformat
+uci del ddns.global.ddns_loglines
+uci set ddns.myddns_ipv6.enabled='0'
+uci del ddns.myddns_ipv6
+
+# Cloudflare IPv4 設定
+uci set ddns.Cloudflare_IPv4=service
+uci set ddns.Cloudflare_IPv4.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv4.use_ipv6='0'
+uci set ddns.Cloudflare_IPv4.enabled='1'
+uci set ddns.Cloudflare_IPv4.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.username='swim3811@gmail.com'
+uci set ddns.Cloudflare_IPv4.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
+uci set ddns.Cloudflare_IPv4.ip_source='interface'
+uci set ddns.Cloudflare_IPv4.interface='wan'
+
+# Cloudflare IPv6 設定
+uci set ddns.Cloudflare_IPv6=service
+uci set ddns.Cloudflare_IPv6.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv6.use_ipv6='1'
+uci set ddns.Cloudflare_IPv6.enabled='1'
+uci set ddns.Cloudflare_IPv6.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.username='swim3811@gmail.com'
+uci set ddns.Cloudflare_IPv6.password='84ec25ca271a1cbc4044ebdfd1a8106e81b71'
+uci set ddns.Cloudflare_IPv6.ip_source='interface'
+uci set ddns.Cloudflare_IPv6.interface='wan'
+
+# ==========================================
+# 8. 提交變更並重啟
 # ==========================================
 
 uci commit luci
@@ -456,6 +466,6 @@ uci commit firewall
 uci commit dropbear
 uci commit ttyd
 uci commit vlmcsd
-uci commit luci-wol
+uci commit ddns
 
 exit 0
