@@ -268,13 +268,13 @@ uci set network.lan.ip6ifaceid='eui64'
 # --- 手動指定 DNS (Cloudflare / Google) ---
 uci del network.wan.dns
 uci set network.wan.peerdns='0'
-uci add_list network.wan.dns='8.8.8.8'
-uci add_list network.wan.dns='8.8.4.4'
+uci add_list network.wan.dns='1.1.1.1'
+uci add_list network.wan.dns='1.0.0.1'
 
 uci del network.wan6.dns
 uci set network.wan6.peerdns='0'
-uci add_list network.wan6.dns='2001:4860:4860::8888'
-uci add_list network.wan6.dns='2001:4860:4860::8844'
+uci add_list network.wan6.dns='2606:4700:4700::1111'
+uci add_list network.wan6.dns='2606:4700:4700::1001'
 uci del network.wan6.reqaddress
 uci del network.wan6.reqprefix
 
