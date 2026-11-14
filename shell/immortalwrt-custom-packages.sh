@@ -30,7 +30,7 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-theme-argon luci-app-argon-config luci-i1
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES dae daed luci-app-daede"
 
 #动态DNS
-#CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES ddns-scripts-cloudflare luci-app-ddns luci-i18n-ddns-zh-cn"
 
 # FCC智能体 (FCC)
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-fcc luci-i18n-fcc-zh-cn"
@@ -102,5 +102,5 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-tasks luci-i18n-tasks-zh-cn"
 # Wireguard VPN控制面板 (wireguard)
 CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-proto-wireguard qrencode"
 
-CUSTOM_PACKAGES="$CUSTOM_PACKAGES autocore nano-full luci-i18n-vlmcsd-zh-cn"
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES autocore nano-full luci-i18n-vlmcsd-zh-cn luci-i18n-openlist-zh-cn"
 
