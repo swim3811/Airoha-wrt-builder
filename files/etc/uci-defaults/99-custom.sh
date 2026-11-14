@@ -458,6 +458,8 @@ uci set ddns.Cloudflare_IPv6.interface='wan'
 # 8. 提交變更並重啟
 # ==========================================
 
+uci set rpcd.policy=policy
+uci commit rpcd
 uci commit luci
 uci commit system
 uci commit network
