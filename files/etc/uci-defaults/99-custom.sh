@@ -467,5 +467,6 @@ uci commit dropbear
 uci commit ttyd
 uci commit vlmcsd
 uci commit ddns
+/etc/init.d/ddns restart
 
 exit 0
