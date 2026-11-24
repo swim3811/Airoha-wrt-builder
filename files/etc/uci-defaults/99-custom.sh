@@ -266,4 +266,274 @@ fi
 echo "99-custom.sh completed at $(date)" >> "$LOGFILE"
 echo "========================================" >> "$LOGFILE"
 
+#!/bin/sh
+
+set -eu
+
+# 執行前先注入環境變數，例如：CF_API_TOKEN="你的新Token" sh setup_ddns.sh
+if [ -z "${CF_API_TOKEN:-}" ]; then
+  echo "Error: CF_API_TOKEN is not set." >&2
+  exit 1
+fi
+
+# ==========================================
+# 1. 系統基礎設定 (密碼、語言、時區)
+# ==========================================
+
+# --- 設定管理員登入密碼 ---
+root_password="gg123456"
+(echo "$root_password"; sleep 1; echo "$root_password") | passwd > /dev/null
+
+uci del system.ntp.enabled
+uci del system.ntp.enable_server
+uci set system.cfg01e48a.log_proto='udp'
+uci set system.cfg01e48a.conloglevel='8'
+
+
+# ==========================================
+# 2. 基礎網路與 DNS 設定 (WAN / LAN / IPv6)
+# ==========================================
+
+# --- WAN PPPoE 與連線設定 ---
+uci set network.wan.proto='pppoe'
+uci set network.wan.username='77433450@ip.hinet.net'
+uci set network.wan.password='myepuhlq'
+uci del network.wan.auto
+uci set network.wan.ipv6='0'
+uci set network.wan.sourcefilter='0'
+uci set network.wan.delegate='0'
+
+# --- 網路介面與 IPv6 清理 ---
+uci del network.wan6
+
+uci set network.wan6=interface
+uci set network.wan6.proto='dhcpv6'
+uci set network.wan6.device='@wan'
+uci set network.wan6.reqaddress='try'
+uci set network.wan6.reqprefix='auto'
+uci set network.wan6.norelease='1'
+
+# --- LAN IPv6 分配 ---
+uci set network.lan.delegate='0'
+uci set network.lan.ip6assign='64'
+uci set network.lan.ip6ifaceid='eui64'
+
+# --- 手動指定 DNS (Cloudflare / Google) ---
+uci del network.wan.dns
+uci set network.wan.peerdns='0'
+uci add_list network.wan.dns='1.1.1.1'
+uci add_list network.wan.dns='1.0.0.1'
+
+uci del network.wan6.dns
+uci set network.wan6.peerdns='0'
+uci add_list network.wan6.dns='2606:4700:4700::1111'
+uci add_list network.wan6.dns='2606:4700:4700::1001'
+uci del network.wan6.reqaddress
+uci del network.wan6.reqprefix
+
+# ==========================================
+# 3. 防火牆與安全性設定
+# ==========================================
+
+# --- 防火牆基礎清理與 FullCone 設定 ---
+uci del firewall.cfg01e63d.syn_flood
+uci del firewall.cfg01e63d.fullcone6
+uci set firewall.cfg01e63d.synflood_protect='1'
+uci set firewall.cfg01e63d.fullcone6='1'
+
+# --- 批次啟用預設防火牆規則 ---
+uci set firewall.cfg0592bd.enabled='1'
+uci set firewall.cfg0692bd.enabled='1'
+uci set firewall.cfg0792bd.enabled='1'
+uci set firewall.cfg0892bd.enabled='1'
+uci set firewall.cfg0992bd.enabled='1'
+uci set firewall.cfg0a92bd.enabled='1'
+uci set firewall.cfg0b92bd.enabled='1'
+uci set firewall.cfg0c92bd.enabled='1'
+uci set firewall.cfg0d92bd.enabled='1'
+
+
+# ==========================================
+# 4. WireGuard VPN 配置
+# ==========================================
+
+# --- 建立 wg0 介面 ---
+uci set network.wg0=interface
+uci set network.wg0.proto='wireguard'
+uci set network.wg0.private_key='uFaJylwL7gJ34K1QaUMDhQmXBDBnk7mSinxSLdWUTGg='
+uci set network.wg0.listen_port='51820'
+uci set network.wg0.mtu='1412'
+uci del network.wg0.addresses
+uci add_list network.wg0.addresses='10.8.0.1/24'
+
+# --- 建立 Peer (Yi-Home) ---
+uci -q delete network.wireguard_wg0
+uci add network wireguard_wg0
+uci set network.@wireguard_wg0[-1].description='Yi-Home'
+uci set network.@wireguard_wg0[-1].public_key='+s/Dm1ZgEYBg54wMijVlj01sPGAXNqEoRyAFFDreons='
+uci set network.@wireguard_wg0[-1].private_key='qNQwcM0U4jl+fj9JmknaSlCx+YheczkBxx2id9TFE18='
+uci set network.@wireguard_wg0[-1].preshared_key='6EYeH3DwN5ucrg9jeXz1LyWdLrB8UWU+XT6c9mwYwvE='
+uci add_list network.@wireguard_wg0[-1].allowed_ips='10.8.0.2/24'
+uci set network.@wireguard_wg0[-1].route_allowed_ips='1'
+uci set network.@wireguard_wg0[-1].persistent_keepalive='25'
+uci set network.@wireguard_wg0[-1].endpoint_host='h.yiqq.eu.org'
+
+# --- 防火牆：將 wg0 加入 LAN 區域 ---
+uci del firewall.cfg02dc81.network
+uci add_list firewall.cfg02dc81.network='lan'
+uci add_list firewall.cfg02dc81.network='wg0'
+
+# --- 防火牆：開啟 51820 埠位 (Wan 存取) ---
+uci -q delete firewall.WireGuard
+uci set firewall.WireGuard='rule'
+uci set firewall.WireGuard.name='Allow-WireGuard'
+uci set firewall.WireGuard.proto='udp'
+uci set firewall.WireGuard.src='wan'
+uci set firewall.WireGuard.dest_port='51820'
+uci set firewall.WireGuard.target='ACCEPT'
+uci set firewall.WireGuard.enabled='1'
+
+
+# ==========================================
+# 5. DHCP 服務與靜態 IP 設定
+# ==========================================
+
+# --- LAN DHCP 參數清理與優化 ---
+uci del dhcp.lan.leasetime
+uci del dhcp.lan.start
+uci del dhcp.lan.limit
+uci del dhcp.lan.ra_slaac
+uci del dhcp.lan.dhcpv6
+uci del dhcp.lan.ignore
+
+uci del dhcp.odhcpd.maindhcp
+uci del dhcp.cfg01411c.nonwildcard
+uci del dhcp.cfg01411c.boguspriv
+uci del dhcp.cfg01411c.filterwin2k
+uci del dhcp.cfg01411c.filter_aaaa
+uci del dhcp.cfg01411c.filter_a
+
+uci set dhcp.lan.dns_service='0'
+uci add_list dhcp.lan.ra_flags='none'
+
+# --- 設定 DHCP 固定 IP (Static Leases) ---
+uci add dhcp host
+uci set dhcp.@host[-1].name='H50G-YI'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:CC'
+uci set dhcp.@host[-1].ip='192.168.5.71'
+uci set dhcp.@host[-1].leasetime='12h'
+
+uci add dhcp host
+uci set dhcp.@host[-1].name='H50G-Living'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:90'
+uci set dhcp.@host[-1].ip='192.168.5.72'
+uci set dhcp.@host[-1].leasetime='12h'
+
+uci add dhcp host
+uci set dhcp.@host[-1].name='H50G-Mater'
+uci set dhcp.@host[-1].mac='C0:25:2F:9A:6E:64'
+uci set dhcp.@host[-1].ip='192.168.5.73'
+uci set dhcp.@host[-1].leasetime='12h'
+
+uci add dhcp host
+uci set dhcp.@host[-1].name='YiSmall-PC'
+uci set dhcp.@host[-1].mac='4C:03:4F:BB:1F:70'
+uci set dhcp.@host[-1].ip='192.168.5.61'
+uci set dhcp.@host[-1].leasetime='12h'
+
+
+# ==========================================
+# 6. 遠端管理與基礎服務設定 (SSH / KMS)
+# ==========================================
+
+# --- 設定主 Dropbear (SSH) ---
+uci del dropbear.main.enable
+uci del dropbear.main.RootPasswordAuth
+uci del dropbear.main.DirectInterface
+uci del dropbear.main._direct
+uci set dropbear.main.Interface='lan'
+
+# --- 新增 VPN 專用 SSH ---
+uci add dropbear dropbear # =cfg024dd4
+uci set dropbear.@dropbear[-1].Interface='wg0'
+uci set dropbear.@dropbear[-1].PasswordAuth='on'
+
+# --- 移除 ttyd 終端機綁定接口 ---
+uci del ttyd.cfg01a8ea.interface
+
+# --- VLMCSD (KMS 激活服務) ---
+uci set vlmcsd.config.enabled='1'
+uci set vlmcsd.config.auto_activate='1'
+uci del vlmcsd.config.internet_access
+
+# --- Openlist (網盤服務) ---
+uci del openlist.config.site_tls_insecure
+uci del openlist.config.log_enable
+uci set openlist.config.enabled='1'
+
+uci -q delete firewall.OpenList
+uci set firewall.OpenList='rule'
+uci set firewall.OpenList.name='Allow-OpenList'
+uci set firewall.OpenList.src='wan'
+uci set firewall.OpenList.dest_port='5244'
+uci set firewall.OpenList.target='ACCEPT'
+uci set firewall.OpenList.enabled='1'
+
+# ==========================================
+# 7. DDNS 設定 (Cloudflare)
+# ==========================================
+
+# 刪除舊設定
+uci del ddns.myddns_ipv4
+uci del ddns.global.upd_privateip
+uci del ddns.global.ddns_dateformat
+uci del ddns.global.ddns_loglines
+uci set ddns.myddns_ipv6.enabled='0'
+uci del ddns.myddns_ipv6
+
+# Cloudflare IPv4 設定
+uci set ddns.Cloudflare_IPv4=service
+uci set ddns.Cloudflare_IPv4.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv4.use_ipv6='0'
+uci set ddns.Cloudflare_IPv4.enabled='1'
+uci set ddns.Cloudflare_IPv4.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv4.username='Bearer'
+uci set ddns.Cloudflare_IPv4.password="${CF_API_TOKEN}"
+uci set ddns.Cloudflare_IPv4.ip_source='network'
+uci set ddns.Cloudflare_IPv4.ip_network='wan'
+uci set ddns.Cloudflare_IPv4.interface='wan'
+uci set ddns.Cloudflare_IPv4.use_syslog='2'
+
+# Cloudflare IPv6 設定
+uci set ddns.Cloudflare_IPv6=service
+uci set ddns.Cloudflare_IPv6.service_name='cloudflare.com-v4'
+uci set ddns.Cloudflare_IPv6.use_ipv6='1'
+uci set ddns.Cloudflare_IPv6.enabled='1'
+uci set ddns.Cloudflare_IPv6.lookup_host='h.yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.domain='h@yiqq.eu.org'
+uci set ddns.Cloudflare_IPv6.username='Bearer'
+uci set ddns.Cloudflare_IPv4.password="${CF_API_TOKEN}"
+uci set ddns.Cloudflare_IPv6.ip_source='network'
+uci set ddns.Cloudflare_IPv6.ip_network='wan6'
+uci set ddns.Cloudflare_IPv6.interface='wan6'
+uci set ddns.Cloudflare_IPv6.use_syslog='2'
+
+# ==========================================
+# 8. 提交變更並重啟
+# ==========================================
+
+uci set rpcd.policy=policy
+uci commit rpcd
+uci commit luci
+uci commit system
+uci commit network
+uci commit dhcp
+uci commit firewall
+uci commit dropbear
+uci commit ttyd
+uci commit vlmcsd
+uci commit ddns
+/etc/init.d/ddns restart
+
 exit 0
